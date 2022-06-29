@@ -9,6 +9,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Launcher;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -16,8 +17,10 @@ import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 
 import jenkins.tasks.SimpleBuildStep;
+// import jenkins.tasks.SimpleBuildWrapper;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,17 +52,38 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
     }
 
     @DataBoundSetter
-    public void setSecrets(final List<VaultSecret> secrets) {
+    public void setSecrets(List<VaultSecret> secrets) {
         this.secrets = secrets;
     }
 
+    public List<VaultSecret> getSecrets() {
+        return secrets;
+    }
+
     @DataBoundSetter
-    public void setClientCredentials(final ClientSecret clientCredentials) {
+    public void setClientCredentials(ClientSecret clientCredentials) {
         this.clientCredentials = clientCredentials;
+    }
+
+    public ClientSecret getClientCredentials() {
+        return clientCredentials;
+    }
+
+    @DataBoundSetter
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
+
+    public String getTenant() {
+        return tenant;
     }
 
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
+        Map<String, String> envs = run instanceof AbstractBuild ? ((AbstractBuild<?,?>) run).getBuildVariables() : Collections.emptyMap();
+        EnvVars env = run.getEnvironment(listener);
+        env.overrideAll(envs);
+
         final Map<String, Object> properties = new HashMap<>();
         assert (clientCredentials != null);
 
@@ -77,12 +101,12 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
             applicationContext.refresh();
             // Fetch the secret
             final Secret secret = applicationContext.getBean(SecretsVault.class).getSecret(vaultSecret.getPath());
-            // Add each of the dataFields to the environment
+            // Add each of the dataFields to the environment         
             vaultSecret.getMappings().forEach(mapping -> {
                 // Prepend the the environment variable prefix
-                context.env(StringUtils.trimToEmpty(
-                        ExtensionList.lookupSingleton(VaultConfiguration.class).getEnvironmentVariablePrefix())
-                        + mapping.getEnvironmentVariable(), secret.getData().get(mapping.getDataField()));
+                env.override(StringUtils.trimToEmpty(
+                                ExtensionList.lookupSingleton(VaultConfiguration.class).getEnvironmentVariablePrefix())
+                                + mapping.getEnvironmentVariable(), secret.getData().get(mapping.getDataField()));
             });
             applicationContext.close();
         });
