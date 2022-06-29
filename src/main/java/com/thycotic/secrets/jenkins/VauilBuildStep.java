@@ -61,7 +61,7 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
             // create a new Spring ApplicationContext using a Map as the PropertySource
             properties.put(CLIENT_ID_PROPERTY, clientCredentials.getClientId());
             properties.put(CLIENT_SECRET_PROPERTY, clientSecret.getSecret());
-            properties.put(TENANT_PROPERTY, vaultSecret.getTenant());
+            properties.put(TENANT_PROPERTY, StringUtils.defaultIfBlank(vaultSecret.getTenant(), tenant));
             properties.put(TLD_PROPERTY, vaultSecret.getTld());
             applicationContext.getEnvironment().getPropertySources()
                     .addLast(new MapPropertySource("properties", properties));
