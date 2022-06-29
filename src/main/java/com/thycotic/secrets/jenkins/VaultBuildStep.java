@@ -1,3 +1,5 @@
+import com.thycotic.secrets.vault.spring.Secret;
+import com.thycotic.secrets.vault.spring.SecretsVault;
 import com.thycotic.secrets.vault.spring.SecretsVaultFactoryBean;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -13,16 +15,19 @@ import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 
-import jenkins.task.SimpleBuildStep;
+import jenkins.tasks.SimpleBuildStep;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.env.MapPropertySource;
 
 public class VaultBuildStep extends Builder implements SimpleBuildStep {
     private static final String CLIENT_ID_PROPERTY = "secrets_vault.client_id";
@@ -35,7 +40,7 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
     private String tenant;
     
     @DataBoundConstructor
-    public VaultBuildStep(String tenant, List<VaultSecret> secrets, List<ClientSecret> clientCredentials) {
+    public VaultBuildStep(String tenant, List<VaultSecret> secrets, ClientSecret clientCredentials) {
         this.tenant = tenant;
         this.secrets = secrets;
         this.clientCredentials = clientCredentials;
@@ -60,7 +65,7 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
             final AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
             // create a new Spring ApplicationContext using a Map as the PropertySource
             properties.put(CLIENT_ID_PROPERTY, clientCredentials.getClientId());
-            properties.put(CLIENT_SECRET_PROPERTY, clientSecret.getSecret());
+            properties.put(CLIENT_SECRET_PROPERTY, clientCredentials.getSecret());
             properties.put(TENANT_PROPERTY, StringUtils.defaultIfBlank(vaultSecret.getTenant(), tenant));
             properties.put(TLD_PROPERTY, vaultSecret.getTld());
             applicationContext.getEnvironment().getPropertySources()
