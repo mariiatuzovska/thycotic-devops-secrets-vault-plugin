@@ -2,8 +2,6 @@ import com.thycotic.secrets.vault.spring.Secret;
 import com.thycotic.secrets.vault.spring.SecretsVault;
 import com.thycotic.secrets.vault.spring.SecretsVaultFactoryBean;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -57,7 +55,7 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
+    public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
         final Map<String, Object> properties = new HashMap<>();
         assert (clientCredentials != null);
 

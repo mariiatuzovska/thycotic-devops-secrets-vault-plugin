@@ -52,6 +52,7 @@ public class ClientSecret extends BaseStandardCredentials implements Serializabl
         return secret;
     }
 
+    @Symbol("devOpsClientCredentials")
     @Extension
     public static class DescriptorImpl extends BaseStandardCredentialsDescriptor {
 
