@@ -4,6 +4,7 @@ import com.thycotic.secrets.vault.spring.Secret;
 import com.thycotic.secrets.vault.spring.SecretsVault;
 import com.thycotic.secrets.vault.spring.SecretsVaultFactoryBean;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.FilePath;
@@ -19,6 +20,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -50,7 +53,7 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+    public void perform(@Nonnull Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
 
         secrets.forEach(vaultSecret -> {
             final ClientSecret clientSecret = ClientSecret.get(vaultSecret.getCredentialId(), null);
@@ -69,12 +72,20 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
             applicationContext.registerBean(SecretsVaultFactoryBean.class);
             applicationContext.refresh();
 
+            HashMap<String, String> envVars = new HashMap<String, String>();
+
             // Fetch the secret
             final Secret secret = applicationContext.getBean(SecretsVault.class).getSecret(vaultSecret.getPath());
             vaultSecret.getMappings().forEach(mapping -> {
                 // Prepend the the environment variable prefix
-                listener.getLogger().println("mapping " + mapping.getEnvironmentVariable() + " " + secret.getData().get(mapping.getDataField()));
+                envVars.put(StringUtils.trimToEmpty(configuration.getEnvironmentVariablePrefix() + mapping.getEnvironmentVariable()), secret.getData().get(mapping.getDataField()));
             });
+            try {
+                EnvVars env = build.getEnvironment(listener);
+                env.overrideAll(envVars);
+            } catch (Exception e) {
+                listener.getLogger().println(e);
+            }
             applicationContext.close();
         });
     }
