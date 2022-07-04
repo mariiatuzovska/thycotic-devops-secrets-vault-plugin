@@ -8,6 +8,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -17,6 +18,7 @@ import hudson.tasks.BuildStepDescriptor;
 import jenkins.tasks.SimpleBuildStep;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +74,7 @@ public class VaultBuildStep extends Builder implements SimpleBuildStep {
             applicationContext.registerBean(SecretsVaultFactoryBean.class);
             applicationContext.refresh();
 
-            HashMap<String, String> envVars = new HashMap<String, String>();
+            Map<String, String> envVars = build instanceof AbstractBuild ? ((AbstractBuild<?,?>) build).getBuildVariables() : Collections.emptyMap();
 
             // Fetch the secret
             final Secret secret = applicationContext.getBean(SecretsVault.class).getSecret(vaultSecret.getPath());
