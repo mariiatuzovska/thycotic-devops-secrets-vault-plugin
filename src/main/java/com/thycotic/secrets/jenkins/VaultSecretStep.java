@@ -22,6 +22,8 @@ import org.springframework.core.env.MapPropertySource;
 import javax.annotation.Nonnull;
 
 import java.io.Serializable;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.HashMap;
@@ -97,7 +99,6 @@ public class VaultSecretStep extends Step implements Serializable {
     @Override
     public StepExecution start(StepContext stepContext) throws Exception {
         return new VaultSecretStepExecution(this, stepContext);
-
     }
 
     private static final class VaultSecretStepExecution extends StepExecution {
@@ -112,6 +113,14 @@ public class VaultSecretStep extends Step implements Serializable {
         private VaultSecretStepExecution(VaultSecretStep step, StepContext context) {
             super(context);
             this.step = step;
+        }
+
+        private void writeObject(ObjectOutputStream stream) throws Exception {
+            stream.defaultWriteObject();
+        }
+
+        private void readObject(ObjectInputStream stream) throws Exception, ClassNotFoundException {
+            stream.defaultReadObject();
         }
 
         @Override
@@ -142,6 +151,7 @@ public class VaultSecretStep extends Step implements Serializable {
                 EnvVars environment = build.getEnvironment(taskListener);
                 // Prepend the the environment variable prefix
                 environment.override(StringUtils.trimToEmpty(configuration.getEnvironmentVariablePrefix() + step.getEnvironmentVariable()), secret.getData().get(step.getSecretDataKey()));
+                getContext().onSuccess(secret.getData().get(step.getSecretDataKey()));
             } catch (Exception e) {
                 getContext().onFailure(e);
             }
@@ -155,7 +165,8 @@ public class VaultSecretStep extends Step implements Serializable {
     }
 
     @Extension
-    public static final class DescriptorImpl extends StepDescriptor {
+    public static final class DescriptorImpl extends StepDescriptor implements Serializable {
+
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
             return new HashSet<Class<?>>() {{
@@ -167,6 +178,14 @@ public class VaultSecretStep extends Step implements Serializable {
         @Override
         public String getFunctionName() {
             return "vaultSecretStep";
+        }
+
+        private void writeObject(ObjectOutputStream stream) throws Exception {
+            stream.defaultWriteObject();
+        }
+
+        private void readObject(ObjectInputStream stream) throws Exception, ClassNotFoundException {
+            stream.defaultReadObject();
         }
     }
 }

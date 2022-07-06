@@ -12,7 +12,6 @@ import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.impl.BaseStandardCredentials;
 import com.cloudbees.plugins.credentials.matchers.IdMatcher;
 
-import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
@@ -53,7 +52,6 @@ public class ClientSecret extends BaseStandardCredentials implements Serializabl
         return secret;
     }
 
-    @Symbol("devOpsClientCredentials")
     @Extension
     public static class DescriptorImpl extends BaseStandardCredentialsDescriptor {
 
