@@ -4,7 +4,6 @@ import com.thycotic.secrets.vault.spring.Secret;
 import com.thycotic.secrets.vault.spring.SecretsVault;
 import com.thycotic.secrets.vault.spring.SecretsVaultFactoryBean;
 
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -32,14 +31,17 @@ import java.util.Map;
 public class VaultSecretStep extends Step implements Serializable {
     private String tenant;
     private String secretPath;
-    private String environmentVariable;
     private String secretDataKey;
     private String credentialsId;
     private String tld;
 
     @DataBoundConstructor
-    public VaultSecretStep() {
-
+    public VaultSecretStep(String tenant, String secretPath, String secretDataKey, String credentialsId, String tld) {
+        this.tenant = tenant;
+        this.secretPath = secretPath;
+        this.secretDataKey = secretDataKey;
+        this.credentialsId = credentialsId;
+        this.tld = tld;
     }
 
     @DataBoundSetter
@@ -58,15 +60,6 @@ public class VaultSecretStep extends Step implements Serializable {
 
     public String getSecretPath() {
         return secretPath;
-    }
-
-    @DataBoundSetter
-    public void setEnvironmentVariable(String environmentVariable) {
-        this.environmentVariable = environmentVariable;
-    }
-
-    public String getEnvironmentVariable() {
-        return environmentVariable;
     }
 
     @DataBoundSetter
@@ -125,9 +118,6 @@ public class VaultSecretStep extends Step implements Serializable {
 
         @Override
         public boolean start() throws Exception {
-            Run build = getContext().get(Run.class);
-            TaskListener taskListener = getContext().get(TaskListener.class);
-
             final ClientSecret clientSecret = ClientSecret.get(step.getCredentialsId(), null);
             final VaultConfiguration configuration = VaultConfiguration.get();
             final Map<String, Object> properties = new HashMap<>();
@@ -144,13 +134,9 @@ public class VaultSecretStep extends Step implements Serializable {
             applicationContext.registerBean(SecretsVaultFactoryBean.class);
             applicationContext.refresh();
 
-            // Fetch the secret
-            final Secret secret = applicationContext.getBean(SecretsVault.class).getSecret(step.getSecretPath());
-
             try {
-                EnvVars environment = build.getEnvironment(taskListener);
-                // Prepend the the environment variable prefix
-                environment.override(StringUtils.trimToEmpty(configuration.getEnvironmentVariablePrefix() + step.getEnvironmentVariable()), secret.getData().get(step.getSecretDataKey()));
+                // Fetch the secret
+                final Secret secret = applicationContext.getBean(SecretsVault.class).getSecret(step.getSecretPath());
                 getContext().onSuccess(secret.getData().get(step.getSecretDataKey()));
             } catch (Exception e) {
                 getContext().onFailure(e);
