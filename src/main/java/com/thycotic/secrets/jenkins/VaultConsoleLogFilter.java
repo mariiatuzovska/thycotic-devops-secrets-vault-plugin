@@ -38,6 +38,4 @@ public class VaultConsoleLogFilter extends ConsoleLogFilter
                 }
             }, charsetName);
     }
-
-    @Symbol("devOpsSecretsVaultConsoleLogFilter");
 }
