@@ -1,6 +1,7 @@
 package com.thycotic.secrets.jenkins;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.MapPropertySource;
 
+import hudson.console.ConsoleLogFilter;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -34,6 +36,7 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
     private static final String TLD_PROPERTY = "secrets_vault.tld";
 
     private List<VaultSecret> secrets;
+    private List<String> valuesToMask = new ArrayList<>();
 
     @DataBoundConstructor
     public VaultBuildWrapper(final List<VaultSecret> secrets) {
@@ -47,6 +50,11 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
     @DataBoundSetter
     public void setSecrets(final List<VaultSecret> secrets) {
         this.secrets = secrets;
+    }
+
+    @Override
+    public ConsoleLogFilter createLoggerDecorator(final Run<?, ?> build) {
+        return new VaultConsoleLogFilter(build.getCharset().name(), valuesToMask);
     }
 
     @Override
@@ -86,6 +94,7 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
                 context.env(StringUtils.trimToEmpty(
                         ExtensionList.lookupSingleton(VaultConfiguration.class).getEnvironmentVariablePrefix())
                         + mapping.getEnvironmentVariable(), secret.getData().get(mapping.getDataField()));
+                valuesToMask.add(secret.getData().get(mapping.getDataField()));
             });
             applicationContext.close();
         });
