@@ -7,12 +7,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.jenkinsci.Symbol;
+
 import hudson.console.ConsoleLogFilter;
 import hudson.model.Run;
 
 import org.jenkinsci.plugins.credentialsbinding.masking.SecretPatterns;
 
-// Borrowed from https://github.com/jenkinsci/credentials-binding-plugin/
 public class VaultConsoleLogFilter extends ConsoleLogFilter
     implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -38,4 +39,6 @@ public class VaultConsoleLogFilter extends ConsoleLogFilter
                 }
             }, charsetName);
     }
+
+    @Symbol("devOpsSecretsVault")
 }
