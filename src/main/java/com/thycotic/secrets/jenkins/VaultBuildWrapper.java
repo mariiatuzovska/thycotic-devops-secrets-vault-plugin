@@ -73,7 +73,6 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
                 clientSecret = ClientSecret.get(configuration.getCredentialId(), null);
             }
             assert (clientSecret != null); // see VaultSecret.DescriptorImpl.doCheckCredentialId
-
             final AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
             // create a new Spring ApplicationContext using a Map as the PropertySource
             properties.put(CLIENT_ID_PROPERTY, clientSecret.getClientId());

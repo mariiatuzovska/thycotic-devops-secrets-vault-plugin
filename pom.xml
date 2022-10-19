@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.19</version>
+        <version>4.16</version>
         <relativePath />
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>thycotic-devops-secrets-vault</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.1</version>
     <packaging>hpi</packaging>
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
@@ -32,12 +32,12 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-<groupId>io.jenkins.tools.bom</groupId>
-<artifactId>bom-2.235.x</artifactId>
-<version>887.vae9c8ac09ff7</version>
-<scope>import</scope>
-<type>pom</type>
-</dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.235.x</artifactId>
+                <version>887.vae9c8ac09ff7</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -62,22 +62,22 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <version>${spring.version}</version>
+            <version>5.3.20</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
+            <version>5.3.20</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>${spring.version}</version>
+            <version>5.3.20</version>
         </dependency>
         <dependency>
             <groupId>com.thycotic.secrets</groupId>
             <artifactId>dsv-sdk-java</artifactId>
-            <version>1.0</version>
+            <version>1.0.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -150,4 +150,15 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jenkins-ci.tools</groupId>
+                <artifactId>maven-hpi-plugin</artifactId>
+                <configuration>
+                    <pluginFirstClassLoader>true</pluginFirstClassLoader>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
